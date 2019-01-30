@@ -15,3 +15,6 @@ TABLESPACE pg_default;
 
 ALTER TABLE public.news
     OWNER to postgres;
+
+INSERT INTO news VALUES (1, 'Some text');
+INSERT INTO news VALUES (2, 'Other text');

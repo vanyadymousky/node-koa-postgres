@@ -1,16 +1,9 @@
 const Koa = require('koa');
+const Router = require('koa-router');
 const { Client } = require('pg');
-const R = require('ramda');
+const { getAsReadable } = require('./tools');
 const app = new Koa();
-
-const idLens = R.lensPath(['id']);
-const bodyLens = R.lensPath(['body']);
-const getId = R.view(idLens);
-const getBody = R.view(bodyLens);
-const getAsReadable = R.compose(
-  R.join(' -> '),
-  R.juxt([getId, getBody]),
-);
+const router = new Router();
 
 if (process.env.NODE_ENV === 'development') {
   require('dotenv').config();
@@ -22,15 +15,23 @@ const connectPostgres = async () => {
   return client;
 };
 
-// response
-app.use(async ctx => {
-  const client = await connectPostgres();
-
-  const res = await client.query('SELECT id, body FROM news');
-  const body = `Hello Koa, now is: ${res.rows.map(getAsReadable).join('; ')}`;
-  debugger;
-  ctx.body = body;
-  await client.end();
+router.get('favicon.ico', (ctx, next) => {
+  ctx.res.statusCode = 404;
 });
+
+app
+  .use(router.routes())
+  .use(router.allowedMethods())
+  .use(async ctx => {
+    console.time('main');
+    console.log('hit');
+    const client = await connectPostgres();
+
+    const res = await client.query('SELECT id, body FROM news');
+    const body = `Hello Koa, now is: ${res.rows.map(getAsReadable).join('; ')}`;
+    ctx.body = body;
+    await client.end();
+    console.timeEnd('main');
+  });
 
 app.listen(3000);
