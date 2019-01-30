@@ -1,0 +1,12 @@
+# dotenv
+.env
+
+# IDEs
+.vscode
+.idea
+
+# modules
+node_modules
+
+# prefer yarn
+package-lock.json

@@ -1,0 +1,21 @@
+{
+  "name": "expedite_experiment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev:debug": "node --inspect index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "koa": "^2.7.0",
+    "pg": "^7.8.0",
+    "ramda": "^0.26.1"
+  },
+  "devDependencies": {
+    "dotenv": "^6.2.0"
+  }
+}
