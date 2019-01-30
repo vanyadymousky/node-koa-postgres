@@ -1,9 +1,10 @@
-const Koa = require('koa');
-const Router = require('koa-router');
+const restify = require('restify');
 const { Client } = require('pg');
-const { getAsReadable } = require('./tools');
-const app = new Koa();
-const router = new Router();
+const { composeHello, sendHttp200 } = require('./tools');
+const app = restify.createServer({
+  name: 'expedite',
+  version: '1.0.0',
+});
 
 if (process.env.NODE_ENV === 'development') {
   require('dotenv').config();
@@ -15,23 +16,22 @@ const connectPostgres = async () => {
   return client;
 };
 
-router.get('favicon.ico', (ctx, next) => {
-  ctx.res.statusCode = 404;
+app.use(restify.plugins.acceptParser(app.acceptable));
+app.use(restify.plugins.queryParser());
+app.use(restify.plugins.bodyParser());
+
+app.get('/', async (req, res, next) => {
+  console.time('main');
+  const client = await connectPostgres();
+
+  const response = await client.query('SELECT id, body FROM news');
+  // const body = `Hello Restify, data is: ${response.rows.map(getAsReadable).join('; ')}`;
+  await client.end();
+  sendHttp200(composeHello(response), res);
+  console.timeEnd('main');
+  return next();
 });
 
-app
-  .use(router.routes())
-  .use(router.allowedMethods())
-  .use(async ctx => {
-    console.time('main');
-    console.log('hit');
-    const client = await connectPostgres();
-
-    const res = await client.query('SELECT id, body FROM news');
-    const body = `Hello Koa, now is: ${res.rows.map(getAsReadable).join('; ')}`;
-    ctx.body = body;
-    await client.end();
-    console.timeEnd('main');
-  });
-
-app.listen(3000);
+app.listen(3000, function () {
+  console.log('%s listening at %s', app.name, app.url);
+});
